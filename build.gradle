@@ -1,0 +1,108 @@
+buildscript {
+    repositories {
+        mavenCentral()
+        jcenter()
+        maven {
+      		url "https://plugins.gradle.org/m2/"
+    	}
+    }
+    dependencies {
+        classpath "org.springframework.boot:spring-boot-gradle-plugin:2.0.4.RELEASE"
+        classpath "org.jfrog.buildinfo:build-info-extractor-gradle:latest.release"
+        classpath "org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.5"
+    }
+}
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+    maven {
+        url "http://172.19.13.137:8081/artifactory/singtel-common"
+        credentials {
+            username = "${artifactory_user}"
+            password = "${artifactory_password}"
+        }
+    }
+}
+
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'maven'
+apply plugin: 'groovy'
+apply plugin: 'idea'
+apply plugin: 'org.springframework.boot'
+apply plugin: 'io.spring.dependency-management'
+apply plugin: 'org.sonarqube'
+apply plugin: 'jacoco'
+
+bootJar {
+    baseName = 'singtel-security'
+    version =  '1.0.0'
+}
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+dependencies {
+	compile 'javax.xml.bind:jaxb-api:2.3.+'
+	compile 'org.glassfish.jaxb:jaxb-runtime:2.3.+'
+	compile 'javax.activation:javax.activation-api:1.2.+'
+	compile 'org.springframework.boot:spring-boot-devtools'
+	compile 'org.springframework.boot:spring-boot-devtools'
+	compile 'org.springframework.security.oauth:spring-security-oauth2:2.3.3.RELEASE'
+	compile 'org.springframework.security:spring-security-jwt:1.0.9.RELEASE'
+	compile 'io.jsonwebtoken:jjwt:0.2'
+	compile 'com.singtel.common:singtel-common:1.0.0-SNAPSHOT'
+    testCompile("org.springframework.boot:spring-boot-starter-test:2.0.3.RELEASE")
+    testCompile group: 'org.meanbean', name: 'meanbean', version: '2.0.3'
+    testCompile("org.mockito:mockito-core:2.+")
+    testCompile("junit:junit:4.12")
+}
+
+jacocoTestCoverageVerification {
+    violationRules {
+        rule {
+            limit {
+                minimum = 0.0
+            }
+        }
+    }
+}
+
+sonarqube {
+    properties {
+       property "sonar.host.url", "http://172.19.13.137:9000"
+       property "sonar.sourceEncoding", "UTF-8"
+       property "sonar.projectName", "${projectName}"
+       property "sonar.projectKey", "${projectName}"
+       property "sonar.sources","src"
+       property "sonar.tests", "src/test"
+       property "sonar.test.inclusions", "**/*Test*/**"
+       property "sonar.exclusions", "**/*Test*/**"
+      }
+}
+
+check.dependsOn jacocoTestCoverageVerification
+
+configurations {
+    integrationtestCompile.extendsFrom testCompile
+    integrationtestRuntime.extendsFrom testRuntime
+}
+sourceSets {
+    integrationtest {
+        compileClasspath += main.output + test.output
+        runtimeClasspath += main.output + test.output
+        java.srcDir file('src/integrationtest/java')
+    }
+    test {
+        resources.srcDir file('src/integrationtest/resources')
+    }
+}
+task integrationtest(type: Test) {
+    testClassesDir = sourceSets.integrationtest.output.classesDir
+    classpath = sourceSets.integrationtest.runtimeClasspath
+    // This is not needed, but I like to see which tests have run
+    testLogging {
+        events "passed", "skipped", "failed"
+    }
+}

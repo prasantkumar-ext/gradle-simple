@@ -1,0 +1,52 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: gl-singtel-security
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: gl-singtel-security
+    spec:
+      containers:
+      - name: gl-singtel-security
+        image: 172.19.13.137:5000/singtel-security:latest
+        ports:
+        - containerPort: 8082
+        imagePullPolicy: Always
+        env:
+        - name: SERVER_PORT
+          value: '8082'
+        - name: SPRING_DATA_MONGODB_DATABASE
+          value: 'singtel'
+        - name: SPRING_DATA_MONGODB_HOST
+          value: '172.19.13.137'
+        - name: SPRING_DATA_MONGODB_PASSWORD
+          value: 'singtel-Admin_{5867}'
+        - name: SPRING_DATA_MONGODB_PORT
+          value: '27017'
+        - name: SPRING_DATA_MONGODB_REPOSITORIES_ENABLED
+          value: 'TRUE'
+        - name: SPRING_DATA_MONGODB_USERNAME
+          value: 'singtelAdmin'
+        - name: SECURITY_OAUTH2_RESOURCE_FILTERORDER
+          value: '3'
+        - name: SECURITY_SIGNINGKEY
+          value: 'MaYzkSjmkzPC57L'
+        - name: SECURITY_ENCODINGSTRENGTH
+          value: '256'
+        - name: SECURITY_SECURITYREALM
+          value: 'glsingtel'
+        - name: SECURITY_JWT_CLIENTID
+          value: 'glsingteljwtclientid'
+        - name: SECURITY_JWT_CLIENTSECRET
+          value: 'XY7kmzoNzl100'
+        - name: SECURITY_JWT_GRANTTYPE
+          value: 'password'
+        - name: SECURITY_JWT_SCOPEREAD
+          value: 'read'
+        - name: SECURITY_JWT_SCOPEWRITE
+          value: 'write'
+        - name: SECURITY_JWT_RESOURCEIDS
+          value: 'glsingteljwtresourceid'

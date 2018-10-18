@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-singtel-security
+spec:
+  ports:
+  - port: 8082
+  selector:
+    app: gl-singtel-security
